@@ -275,6 +275,7 @@
             margin-bottom: 20px;
             font-family: 'SF Mono', 'Courier New', Courier, monospace;
             background-color: var(--bg-secondary);
+            color: var(--text-primary);
             transition: all 0.3s ease;
         }
 
@@ -1521,7 +1522,7 @@ https://example.org
                 try {
                     const headers = {
                         'X-Md-Link-Style': 'discarded',
-                        'X-Remove-Selector': 'header, .header, #header, footer, .footer, #footer',
+                        'X-Remove-Selector': 'header, .header, #header, footer, .footer, #footer, nav, .nav, #nav, .navigation, #navigation, .menu, #menu, .nav-menu, #nav-menu, .top-nav, .main-nav, aside, .aside, #aside, .sidebar, #sidebar, .left-sidebar, .right-sidebar, .sidebar-left, .sidebar-right, .widget, .widget-area, .ad, #ad, .advertisement, #advertisement, .ads, #ads, .ad-container, .ad-wrapper, .banner, .banner-ad, .sponsored, .sponsored-content, .promo, .promotion, .advert, .advert-unit, .comments, #comments, .comment-section, .share-buttons, .social-share, .pagination, .nav-pagination, .related-posts, .related-articles, .tags, .post-tags, .author-bio, .author-info, .newsletter, .subscribe, .popup, .modal, .cookie-banner, .cookie-notice, .back-to-top, .scroll-top, .search, .search-form, .user-profile, .user-menu, .notification, .alert, .breadcrumb, .breadcrumbs',
                         'X-Retain-Images': 'none'
                     };
                     if (token) {
