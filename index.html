@@ -448,43 +448,236 @@
         @media (max-width: 768px) {
             body {
                 padding: 10px 0;
+                -webkit-overflow-scrolling: touch;
+                overflow-scrolling: touch;
             }
             
             .container {
                 padding: 0 10px;
             }
             
+            /* 设置按钮优化 */
+            .settings-btn {
+                top: 5px;
+                right: 10px;
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            
             h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
                 margin-bottom: 20px;
+                padding: 0 5px;
             }
             
             h2 {
-                font-size: 1.5rem;
+                font-size: 1.3rem;
+            }
+            
+            /* Tab按钮优化 */
+            .tab-btn {
+                padding: 12px 15px;
+                font-size: 15px;
+                font-weight: 500;
+            }
+            
+            /* 输入框和按钮优化 */
+            #url-input {
+                padding: 12px;
+                font-size: 15px;
+                min-height: 120px;
+                -webkit-appearance: none;
+                appearance: none;
+            }
+            
+            #token-input {
+                -webkit-appearance: none;
+                appearance: none;
+            }
+            
+            #submit-btn,
+            .process-btn,
+            .download-btn {
+                width: 100%;
+                padding: 14px;
+                font-size: 16px;
+                -webkit-appearance: none;
+                appearance: none;
+            }
+            
+            /* 模态框优化 */
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+                max-width: 400px;
+            }
+            
+            .modal-header,
+            .modal-body,
+            .modal-footer {
+                padding: 20px;
+            }
+            
+            .modal-header h3 {
+                font-size: 1.3rem;
+            }
+            
+            .modal-footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .save-btn,
+            .cancel-btn {
+                width: 100%;
+                padding: 12px;
+                font-size: 15px;
+                -webkit-appearance: none;
+                appearance: none;
             }
             
             .input-section,
             .results-section {
-                padding: 20px;
+                padding: 15px;
             }
             
+            /* 进度和统计信息优化 */
+            .stats {
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .stat-item {
+                padding: 12px 15px;
+                min-width: 100px;
+                flex: 1 1 calc(50% - 5px);
+            }
+            
+            .stat-item .value {
+                font-size: 1.2rem;
+            }
+            
+            /* 日志区域优化 */
+            #log-content {
+                height: 150px;
+                padding: 12px;
+                font-size: 0.8rem;
+                -webkit-overflow-scrolling: touch;
+                overflow-scrolling: touch;
+            }
+            
+            /* 表格优化 */
             #results-table {
-                font-size: 14px;
+                font-size: 13px;
                 display: block;
                 overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+                overflow-scrolling: touch;
             }
             
             #results-table th,
             #results-table td {
-                padding: 10px 12px;
+                padding: 8px 10px;
             }
             
             #results-table td:nth-child(2) {
-                max-width: 200px;
+                max-width: 150px;
+            }
+            
+            #results-table td:nth-child(3) {
+                max-width: 120px;
             }
             
             #results-table td:nth-child(4) {
-                max-width: 300px;
+                max-width: 200px;
+            }
+            
+            /* 复制按钮优化 */
+            .copy-btn {
+                top: 5px;
+                right: 5px;
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+            
+            /* 移动端触摸反馈 */
+            button {
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+            
+            /* 按钮触摸效果 */
+            button:active {
+                transform: scale(0.98);
+                transition: transform 0.1s ease;
+            }
+            
+            .settings-btn:active,
+            #submit-btn:active,
+            .process-btn:active,
+            .download-btn:active,
+            .save-btn:active,
+            .cancel-btn:active {
+                transform: translateY(0) scale(0.98);
+            }
+            
+            .copy-btn:active {
+                transform: scale(0.95);
+            }
+            
+            /* Tab优化 */
+            .tab {
+                padding: 12px 16px;
+                touch-action: manipulation;
+            }
+            
+            .tab:active {
+                background-color: rgba(4, 120, 87, 0.1);
+            }
+            
+            /* 文件上传区域优化 */
+            .file-upload-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .file-selector,
+            .file-name {
+                min-width: auto;
+                max-width: none;
+                width: 100%;
+            }
+            
+            .file-selector:active {
+                transform: scale(0.98);
+            }
+            
+            /* 表单元素触摸优化 */
+            input:focus,
+            textarea:focus {
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            }
+            
+            /* 滚动优化 */
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            
+            ::-webkit-scrollbar-track {
+                background: var(--bg-secondary);
+                border-radius: 3px;
+            }
+            
+            ::-webkit-scrollbar-thumb {
+                background: var(--primary-color);
+                border-radius: 3px;
+            }
+            
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--primary-dark);
             }
         }
 
@@ -922,7 +1115,27 @@
             .processing-stats {
                 flex-direction: column;
             }
-        }
+            
+            /* 设置按钮图标化 */
+            .settings-btn {
+                text-indent: -9999px;
+                width: 40px;
+                height: 40px;
+                padding: 10px;
+            }
+            
+            .settings-btn::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 16px;
+                height: 16px;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='8' x2='6' y2='8'%3E%3C/line%3E%3Cline x1='18' y1='16' x2='6' y2='16'%3E%3C/line%3E%3Cline x1='18' y1='12' x2='6' y2='12'%3E%3C/line%3E%3C/svg%3E");
+                background-size: contain;
+                background-repeat: no-repeat;
+            }
     </style>
 </head>
 <body>
