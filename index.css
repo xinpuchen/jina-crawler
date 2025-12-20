@@ -81,12 +81,12 @@ body {
 
 .modal-content {
     background-color: var(--bg-primary);
-    margin: 15% auto;
+    margin: 10% auto;
     padding: 0;
     border: 2px solid var(--border-color);
     border-radius: var(--radius-lg);
     width: 90%;
-    max-width: 500px;
+    max-width: 800px;
     box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
     animation: modalSlideIn 0.3s ease;
 }
@@ -131,14 +131,75 @@ body {
 }
 
 .modal-body {
+    padding: 0;
+}
+
+/* 设置容器样式 */
+.settings-container {
+    display: flex;
+    height: 500px;
+    min-height: 400px;
+}
+
+/* 左侧导航样式 */
+.settings-nav {
+    width: 200px;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.nav-item:hover {
+    background-color: rgba(4, 120, 87, 0.1);
+    color: var(--text-primary);
+}
+
+.nav-item.active {
+    background-color: rgba(4, 120, 87, 0.2);
+    color: #ffffff; /* 更亮的白色 */
+    font-weight: 600;
+    border-left: 3px solid var(--primary-color);
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* 右侧内容区域样式 */
+.settings-content {
+    flex: 1;
     padding: 30px;
+    overflow-y: auto;
 }
 
-.form-group {
-    margin-bottom: 20px;
+.tab-content {
+    display: none;
 }
 
-.form-group label {
+.tab-content.active {
+    display: block;
+}
+
+/* Token管理样式 */
+.token-management {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.token-input-section label {
     display: block;
     margin-bottom: 10px;
     font-weight: 600;
@@ -146,9 +207,15 @@ body {
     font-size: 1rem;
 }
 
-#token-input {
-    width: 100%;
-    padding: 15px;
+.token-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+#new-token-input {
+    flex: 1;
+    padding: 12px 15px;
     border: 2px solid var(--border-color);
     border-radius: var(--radius-md);
     font-size: 16px;
@@ -157,11 +224,30 @@ body {
     transition: all 0.3s ease;
 }
 
-#token-input:focus {
+#new-token-input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     background-color: var(--bg-primary);
+}
+
+.add-token-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+}
+
+.add-token-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
 
 .help-text {
@@ -169,6 +255,197 @@ body {
     margin-top: 5px;
     color: var(--text-secondary);
     font-size: 0.875rem;
+}
+
+.token-list-section h4 {
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.token-buttons {
+    margin-top: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.token-buttons .add-token-btn,
+.token-buttons .cancel-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.token-buttons .add-token-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+}
+
+.token-buttons .cancel-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.no-tokens {
+    color: var(--text-secondary);
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+.token-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.token-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px; /* 减少内边距以降低高度 */
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    min-height: 50px; /* 设置最小高度 */
+}
+
+.token-item:hover {
+    background-color: var(--bg-tertiary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.token-item.active-token {
+    border-color: var(--primary-color);
+    background-color: rgba(4, 120, 87, 0.15);
+    box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.token-display {
+    font-family: 'SF Mono', 'Courier New', Courier, monospace;
+    font-size: 13px;
+    color: var(--text-primary);
+    flex: 1;
+    word-break: break-all;
+    margin-right: 12px;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.token-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.activate-btn, .remove-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 36px;
+}
+
+/* Mobile optimization for text buttons */
+@media (max-width: 768px) {
+    .activate-btn, .remove-btn {
+        min-width: 36px; /* Smaller buttons for mobile */
+        min-height: 36px;
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    
+    .token-item {
+        padding: 8px 10px;
+        min-height: 40px;
+    }
+    
+    .token-display {
+        font-size: 12px;
+        margin-right: 8px;
+    }
+}
+
+/* Additional mobile-friendly styles */
+@media (max-width: 480px) {
+    .token-actions {
+        gap: 4px;
+    }
+    
+    .activate-btn, .remove-btn {
+        padding: 4px 6px;
+        font-size: 11px;
+        min-width: 32px;
+        min-height: 32px;
+    }
+    
+    .token-item {
+        padding: 6px 8px;
+        min-height: 36px;
+    }
+    
+    .token-display {
+        font-size: 11px;
+        margin-right: 6px;
+    }
+}
+
+.activate-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.remove-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.activate-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.activate-btn:hover:not(:disabled) {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.activate-btn:disabled {
+    background-color: var(--primary-color);
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.activate-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.remove-btn {
+    background-color: #dc2626;
+    color: white;
+}
+
+.remove-btn:hover {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
 }
 
 .modal-footer {
@@ -432,6 +709,7 @@ h2 {
 }
 
 /* 响应式设计 */
+/* 响应式设计 */
 @media (max-width: 768px) {
     body {
         padding: 10px 0;
@@ -477,9 +755,10 @@ h2 {
         appearance: none;
     }
     
-    #token-input {
+    #new-token-input {
         -webkit-appearance: none;
         appearance: none;
+        min-height: 44px; /* 触摸友好的最小高度 */
     }
     
     #submit-btn,
@@ -490,13 +769,32 @@ h2 {
         font-size: 16px;
         -webkit-appearance: none;
         appearance: none;
+        min-height: 44px; /* 触摸友好的最小高度 */
     }
     
     /* 模态框优化 */
     .modal-content {
-        margin: 10% auto;
+        margin: 5% auto;
         width: 95%;
-        max-width: 400px;
+        max-width: none;
+        max-height: 90vh;
+    }
+    
+    .settings-container {
+        flex-direction: column;
+        height: auto;
+        max-height: calc(90vh - 120px);
+    }
+    
+    .settings-nav {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .settings-content {
+        padding: 20px;
+        max-height: none;
     }
     
     .modal-header,
@@ -517,10 +815,11 @@ h2 {
     .save-btn,
     .cancel-btn {
         width: 100%;
-        padding: 12px;
+        padding: 14px;
         font-size: 15px;
         -webkit-appearance: none;
         appearance: none;
+        min-height: 44px; /* 触摸友好的最小高度 */
     }
     
     .input-section,
@@ -634,6 +933,7 @@ h2 {
         min-width: auto;
         max-width: none;
         width: 100%;
+        min-height: 44px; /* 触摸友好的最小高度 */
     }
     
     .file-selector:active {
@@ -665,6 +965,73 @@ h2 {
     
     ::-webkit-scrollbar-thumb:hover {
         background: var(--primary-dark);
+    }
+    
+    /* Token管理移动端优化 */
+    .token-input-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .add-token-btn {
+        width: 100%;
+        min-height: 44px; /* 触摸友好的最小高度 */
+    }
+    
+    .token-item {
+        flex-direction: row; /* 保持水平排列 */
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        flex-wrap: nowrap; /* 防止换行 */
+    }
+    
+    .token-display {
+        font-size: 14px;
+        flex: 1;
+        word-break: break-all;
+        min-width: 0; /* 允许收缩 */
+    }
+    
+    .token-actions {
+        align-self: center;
+        width: auto;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        flex-shrink: 0; /* 防止按钮收缩 */
+    }
+    
+    .activate-btn, .remove-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-height: 36px; /* 触摸友好的最小高度 */
+        min-width: 60px;
+    }
+    
+    /* 导航项优化 */
+    .nav-item {
+        padding: 16px 20px;
+        font-size: 16px;
+    }
+    
+    /* Token列表区域优化 */
+    .token-list-section h4 {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+    
+    /* 测试按钮优化 */
+    #test-add-token, #test-show-tokens {
+        width: 100%;
+        min-height: 44px;
+        margin-bottom: 8px;
+    }
+    
+    /* 设置容器滚动优化 */
+    .settings-content {
+        -webkit-overflow-scrolling: touch;
+        overflow-scrolling: touch;
     }
 }
 
@@ -1122,5 +1489,162 @@ h2 {
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='8' x2='6' y2='8'%3E%3C/line%3E%3Cline x1='18' y1='16' x2='6' y2='16'%3E%3C/line%3E%3Cline x1='18' y1='12' x2='6' y2='12'%3E%3C/line%3E%3C/svg%3E");
         background-size: contain;
         background-repeat: no-repeat;
+    }
+}
+
+/* 极小屏幕优化 (小于480px) */
+@media (max-width: 480px) {
+    .modal-content {
+        margin: 2% auto;
+        width: 98%;
+        max-height: 96vh;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 15px;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .close {
+        font-size: 24px;
+    }
+    
+    .settings-container {
+        max-height: calc(96vh - 100px);
+    }
+    
+    .nav-item {
+        padding: 14px 15px;
+        font-size: 15px;
+    }
+    
+    .settings-content {
+        padding: 15px;
+    }
+    
+    .token-input-section label {
+        font-size: 0.9rem;
+    }
+    
+    #new-token-input {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .add-token-btn {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    .token-list-section h4 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+    
+    .token-item {
+        padding: 10px;
+    }
+    
+    .token-display {
+        font-size: 13px;
+    }
+    
+    .activate-btn, .remove-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-height: 36px;
+        min-width: 70px;
+    }
+    
+    .help-text {
+        font-size: 0.8rem;
+    }
+    
+    /* 表格优化 */
+    #results-table {
+        font-size: 12px;
+    }
+    
+    #results-table th,
+    #results-table td {
+        padding: 6px 8px;
+    }
+    
+    .content-cell {
+        -webkit-line-clamp: 2;
+    }
+    
+    /* 日志区域 */
+    #log-content {
+        height: 120px;
+        font-size: 0.75rem;
+    }
+}
+
+/* 关于 Jina Crawler 部分样式 */
+.about-section {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.about-section h4 {
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.about-content {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.7;
+}
+
+.about-content h5 {
+    margin: 15px 0 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.about-content ul, .about-content ol {
+    margin: 0 0 15px 20px;
+    padding: 0;
+}
+
+.about-content li {
+    margin-bottom: 5px;
+}
+
+.about-content p {
+    margin-bottom: 15px;
+}
+
+.about-content ul ul, .about-content ol ul {
+    margin: 5px 0 5px 20px;
+}
+
+/* 响应式样式 */
+@media (max-width: 768px) {
+    .about-section {
+        margin-top: 0;
+        padding-top: 0;
+    }
+    
+    .about-content {
+        font-size: 0.9rem;
+    }
+    
+    .about-section h4 {
+        font-size: 1.1rem;
+    }
+    
+    .about-content h5 {
+        font-size: 0.95rem;
     }
 }

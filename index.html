@@ -71,7 +71,7 @@ https://example.org
             <button id="download-excel-btn" class="download-btn" style="display: none;">下载处理后的Excel文件</button>
         </div>
         
-        <div class="results-section">
+        <div class="results-section" style="display: none;">
             <h2>获取结果</h2>
             <div id="results-container">
                 <table id="results-table">
@@ -99,15 +99,82 @@ https://example.org
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label for="token-input">API Token <a href="https://jina.ai/" target="_blank" style="color: inherit; text-decoration: underline;">如何获取？</a></label>
-                    <input type="text" id="token-input" placeholder="请输入您的API Token" maxlength="100">
-                    <small class="help-text">Token将保存在浏览器本地存储中</small>
+                <div class="settings-container">
+                    <!-- 左侧导航 -->
+                    <div class="settings-nav">
+                        <ul class="nav-list">
+                            <li class="nav-item active" data-tab="token-management">Token 管理</li>
+                            <li class="nav-item" data-tab="about">关于 Jina Crawler</li>
+                        </ul>
+                    </div>
+                    <!-- 右侧内容区域 -->
+                    <div class="settings-content">
+                        <div class="tab-content active" id="token-management-tab">
+                            <div class="token-management">
+                                <div class="token-input-section">
+                                    <label for="new-token-input">添加新Token (<a href="https://jina.ai/" target="_blank" style="color: #60a5fa; font-weight: normal;">如何获取API Token?</a>)</label>
+                                    <div class="token-input-group">
+                                        <input type="text" id="new-token-input" placeholder="请输入您的API Token" maxlength="100">
+                                        <button id="add-token-btn" class="add-token-btn">添加</button>
+                                    </div>
+                                    <small class="help-text">Token将保存在浏览器本地存储中</small>
+                                </div>
+                                <div class="token-list-section">
+                                    <h4>Token 列表</h4>
+                                    <div id="token-list-container">
+                                        <!-- Token列表将通过JavaScript动态生成 -->
+                                    </div>
+                                    <div class="token-buttons">
+                                        <button id="copy-all-tokens-btn" class="add-token-btn">导出Token</button>
+                                        <button id="paste-all-tokens-btn" class="cancel-btn">导入Token</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="tab-content" id="about-tab">
+                            <div class="about-section">
+                                <h4>关于 Jina Crawler</h4>
+                                <div class="about-content">
+                                    <p>Jina Crawler 是一个基于 Jina AI Reader API 的网页内容抓取工具，可以帮助您快速获取网页的结构化内容。</p>
+                                    
+                                    <h5>功能特性：</h5>
+                                    <ul>
+                                        <li>支持单个或批量网页内容抓取</li>
+                                        <li>支持 Excel 文件批量处理（读取第 E 列链接）</li>
+                                        <li>支持 Jina AI API Token 管理</li>
+                                        <li>自动去除页面广告、导航栏等无关内容</li>
+                                        <li>结果可导出为 Excel 文件</li>
+                                    </ul>
+                                    
+                                    <h5>使用说明：</h5>
+                                    <ol>
+                                        <li>在"Token 管理"中添加您的 Jina AI API Token（可选但推荐）</li>
+                                        <li>选择处理方式：
+                                            <ul>
+                                                <li>手动粘贴：在文本框中粘贴网页链接（每行一个）</li>
+                                                <li>Excel 上传：上传包含链接的 Excel 文件（链接需在第 E 列）</li>
+                                            </ul>
+                                        </li>
+                                        <li>点击"获取内容"或"处理 Excel 文件"开始处理</li>
+                                        <li>查看结果并导出所需内容</li>
+                                    </ol>
+                                    
+                                    <h5>注意事项：</h5>
+                                    <ul>
+                                        <li>免费用户无 Token 时请求间隔为 60 秒</li>
+                                        <li>Token 用户请求间隔为 3 秒</li>
+                                        <li>单次最多处理 5000 个链接</li>
+                                        <li>Excel 处理结果会添加到第 H 列后的"全文内容"列</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="save-token-btn" class="save-btn">保存</button>
-                <button id="cancel-btn" class="cancel-btn">取消</button>
+                <button id="close-settings-btn" class="cancel-btn">关闭</button>
             </div>
         </div>
     </div>
