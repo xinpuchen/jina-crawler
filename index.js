@@ -656,18 +656,159 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsModal = document.getElementById('settings-modal');
     const settingsBtn = document.getElementById('settings-btn');
     const closeBtn = document.querySelector('.close');
-    const saveTokenBtn = document.getElementById('save-token-btn');
-    const cancelBtn = document.getElementById('cancel-btn');
-    const tokenInput = document.getElementById('token-input');
+    const cancelBtn = document.getElementById('close-settings-btn');
+    const newTokenInput = document.getElementById('new-token-input');
+    const addTokenBtn = document.getElementById('add-token-btn');
+    const tokenListContainer = document.getElementById('token-list-container');
     
-    // 从localStorage获取token
-    function getToken() {
-        return localStorage.getItem('jina_ai_token');
+    // Token存储的键名
+    const TOKEN_STORAGE_KEY = 'jina_crawler_tokens';
+    
+    // 获取所有tokens
+    function getAllTokens() {
+        const tokensStr = localStorage.getItem(TOKEN_STORAGE_KEY);
+        return tokensStr ? JSON.parse(tokensStr) : [];
     }
     
-    // 保存token到localStorage
-    function saveToken(token) {
-        localStorage.setItem('jina_ai_token', token);
+    // 保存所有tokens
+    function saveAllTokens(tokens) {
+        localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokens));
+    }
+    
+    // 获取当前激活的token
+    function getActiveToken() {
+        const tokens = getAllTokens();
+        const activeToken = tokens.find(token => token.active);
+        return activeToken ? activeToken.value : null;
+    }
+    
+    // 设置激活的token
+    function setActiveToken(tokenValue) {
+        const tokens = getAllTokens();
+        tokens.forEach(token => {
+            token.active = token.value === tokenValue;
+        });
+        saveAllTokens(tokens);
+    }
+    
+    // 添加新token
+    function addToken(tokenValue) {
+        if (!tokenValue) return false;
+        
+        const tokens = getAllTokens();
+        
+        // 检查是否已存在
+        const existingToken = tokens.find(token => token.value === tokenValue);
+        if (existingToken) {
+            alert('该Token已存在！');
+            return false;
+        }
+        
+        // 如果这是第一个token，则设为激活状态
+        const isActive = tokens.length === 0;
+        
+        tokens.push({
+            value: tokenValue,
+            active: isActive,
+            createdAt: new Date().toISOString()
+        });
+        
+        saveAllTokens(tokens);
+        renderTokenList();
+        return true;
+    }
+    
+    // 删除token
+    function removeToken(tokenValue) {
+        let tokens = getAllTokens();
+        
+        // 检查是否是当前激活的token
+        const activeToken = tokens.find(token => token.active);
+        if (activeToken && activeToken.value === tokenValue) {
+            // 如果是激活的token，询问用户是否确定删除
+            if (tokens.length === 1) {
+                // 如果是唯一的一个token，允许删除并清空激活状态
+                tokens = tokens.filter(token => token.value !== tokenValue);
+                saveAllTokens(tokens);
+                renderTokenList();
+                return true;
+            } else {
+                // 如果有多个token且当前token是激活的，不允许直接删除
+                alert('此Token当前处于激活状态，无法直接删除。请先激活其他Token后再删除此Token！');
+                return false;
+            }
+        }
+        
+        // 删除非激活的token
+        tokens = tokens.filter(token => token.value !== tokenValue);
+        
+        saveAllTokens(tokens);
+        renderTokenList();
+        return true;
+    }
+    
+    // 渲染token列表
+    function renderTokenList() {
+        const tokens = getAllTokens();
+        tokenListContainer.innerHTML = '';
+        
+        if (tokens.length === 0) {
+            tokenListContainer.innerHTML = '<p class="no-tokens">暂无Token，请添加</p>';
+            return;
+        }
+        
+        const ul = document.createElement('ul');
+        ul.className = 'token-list';
+        
+        tokens.forEach(token => {
+            const li = document.createElement('li');
+            li.className = 'token-item';
+            
+            const tokenDisplay = document.createElement('div');
+            tokenDisplay.className = 'token-display';
+            tokenDisplay.textContent = token.value; // 显示完整token值
+            
+            const tokenActions = document.createElement('div');
+            tokenActions.className = 'token-actions';
+            
+            // 启用/禁用按钮
+            const activateBtn = document.createElement('button');
+            activateBtn.className = token.active ? 'activate-btn active' : 'activate-btn';
+            activateBtn.textContent = token.active ? '已启用' : '启用';
+            activateBtn.title = token.active ? '已启用' : '启用';
+            activateBtn.disabled = token.active;
+            activateBtn.addEventListener('click', () => {
+                setActiveToken(token.value);
+                renderTokenList();
+            });
+            
+            tokenActions.appendChild(activateBtn);
+            
+            // 显示删除按钮（非激活token总是可以删除；如果是唯一token即使激活也可以删除）
+            if (!token.active || tokens.length === 1) {
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = '删除';
+                removeBtn.title = '删除';
+                removeBtn.addEventListener('click', () => {
+                    if (confirm('确定要删除此Token吗？')) {
+                        removeToken(token.value);
+                    }
+                });
+                tokenActions.appendChild(removeBtn);
+            }
+            
+            li.appendChild(tokenDisplay);
+            li.appendChild(tokenActions);
+            
+            if (token.active) {
+                li.classList.add('active-token');
+            }
+            
+            ul.appendChild(li);
+        });
+        
+        tokenListContainer.appendChild(ul);
     }
     
     // 初始化设置弹窗
@@ -675,8 +816,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 显示弹窗
         settingsBtn.addEventListener('click', () => {
             settingsModal.style.display = 'block';
-            // 填充当前token
-            tokenInput.value = getToken() || '';
+            newTokenInput.value = '';
+            renderTokenList();
         });
         
         // 关闭弹窗
@@ -697,13 +838,133 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // 保存token
-        saveTokenBtn.addEventListener('click', () => {
-            const token = tokenInput.value.trim();
-            saveToken(token);
-            alert('Token已保存！');
-            closeModal();
+        // 添加token
+        addTokenBtn.addEventListener('click', () => {
+            const tokenValue = newTokenInput.value.trim();
+            if (tokenValue) {
+                if (addToken(tokenValue)) {
+                    newTokenInput.value = '';
+                    // 移除了成功提示
+                }
+            } else {
+                alert('请输入有效的Token！');
+            }
         });
+        
+        // 回车添加token
+        newTokenInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addTokenBtn.click();
+            }
+        });
+        
+        // 复制所有token按钮事件
+        const copyAllTokensBtn = document.getElementById('copy-all-tokens-btn');
+        if (copyAllTokensBtn) {
+            copyAllTokensBtn.addEventListener('click', () => {
+                const tokens = getAllTokens();
+                if (tokens.length === 0) {
+                    alert('没有Token可以复制！');
+                    return;
+                }
+                
+                // 将所有token值转换为字符串，每行一个
+                const tokensText = tokens.map(token => token.value).join('\n');
+                
+                // 复制到剪贴板
+                navigator.clipboard.writeText(tokensText).then(() => {
+                    alert('Token列表已成功导出到剪贴板！');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    alert('复制失败，请手动复制以下内容：\n\n' + tokensText);
+                });
+            });
+        }
+        
+        // 粘贴所有token按钮事件
+        const pasteAllTokensBtn = document.getElementById('paste-all-tokens-btn');
+        if (pasteAllTokensBtn) {
+            pasteAllTokensBtn.addEventListener('click', () => {
+                const pasteInput = prompt('请粘贴其他用户发给您的Token:');
+                if (pasteInput === null) {
+                    // 用户点击了取消
+                    return;
+                }
+                
+                const text = pasteInput.trim();
+                if (!text) {
+                    alert('输入为空或没有有效内容！');
+                    return;
+                }
+                
+                // 按行分割并过滤空行
+                const tokenLines = text.split('\n').map(line => line.trim()).filter(line => line);
+                
+                if (tokenLines.length === 0) {
+                    alert('输入中没有有效的Token！');
+                    return;
+                }
+                
+                // 获取现有tokens
+                let existingTokens = getAllTokens();
+                let addedCount = 0;
+                
+                // 添加每个token（去重）
+                tokenLines.forEach(tokenValue => {
+                    // 检查是否已存在
+                    const existingToken = existingTokens.find(token => token.value === tokenValue);
+                    if (!existingToken) {
+                        // 添加新token
+                        existingTokens.push({
+                            value: tokenValue,
+                            active: false, // 新粘贴的token默认不激活
+                            createdAt: new Date().toISOString()
+                        });
+                        addedCount++;
+                    }
+                });
+                
+                // 保存更新后的tokens
+                saveAllTokens(existingTokens);
+                
+                // 重新渲染列表
+                renderTokenList();
+                
+                if (addedCount > 0) {
+                    alert(`成功添加 ${addedCount} 个新Token！`);
+                } else {
+                    alert('没有添加新Token（所有Token均已存在）');
+                }
+            });
+        }
+        
+
+        
+        // 添加标签切换功能
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // 移除所有导航项的active类
+                navItems.forEach(navItem => navItem.classList.remove('active'));
+                
+                // 为当前点击的导航项添加active类
+                item.classList.add('active');
+                
+                // 隐藏所有内容面板（仅限设置模态框内的面板）
+                const settingsContent = document.querySelector('.settings-content');
+                const tabContents = settingsContent.querySelectorAll('.tab-content');
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                // 显示对应的内容面板
+                const tabId = item.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+    }
+    
+    // 修改原有的getToken函数以使用新的多token管理
+    function getToken() {
+        return getActiveToken();
     }
     
     // 调用初始化设置功能
