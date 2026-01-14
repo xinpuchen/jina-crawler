@@ -21,6 +21,7 @@
             <div class="tab-buttons">
                 <button id="tab-excel" class="tab-btn active">Excel文件上传</button>
                 <button id="tab-manual" class="tab-btn">手动粘贴链接</button>
+                <button id="tab-reddit" class="tab-btn">Reddit 定制化</button>
             </div>
             
             <!-- 手动粘贴Tab内容 -->
@@ -45,6 +46,21 @@ https://example.org
                             <span id="file-selector" class="file-selector">选择Excel文件</span>
                         </label>
                         <button id="process-excel-btn" class="process-btn" disabled style="display: none;">处理Excel文件</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reddit定制化Tab内容 -->
+            <div id="content-reddit" class="tab-content">
+                <div class="input-section">
+                    <h2>Reddit 定制化处理</h2>
+                    <p>支持上传包含Reddit链接的Excel文件，系统将自动读取第A列的链接（最多5000个），提取对应的文章或评论数据，并在后续列添加以下字段：title, author, date, content, comment_author, comment_date, comment_content。</p>
+                    <div class="file-upload-section">
+                        <label for="reddit-file" class="file-label">
+                            <input type="file" id="reddit-file" accept=".xlsx,.xls" style="display: none;">
+                            <span id="reddit-file-selector" class="file-selector">选择Reddit Excel文件</span>
+                        </label>
+                        <button id="process-reddit-btn" class="process-btn" disabled style="display: none;">处理Reddit文件</button>
                     </div>
                 </div>
             </div>
@@ -104,6 +120,7 @@ https://example.org
                     <div class="settings-nav">
                         <ul class="nav-list">
                             <li class="nav-item active" data-tab="token-management">Token 管理</li>
+                            <li class="nav-item" data-tab="reddit-management">Reddit 管理</li>
                             <li class="nav-item" data-tab="about">关于 Jina Crawler</li>
                         </ul>
                     </div>
@@ -130,6 +147,27 @@ https://example.org
                                     </div>
                                 </div>
 
+                            </div>
+                        </div>
+                        <div class="tab-content" id="reddit-management-tab">
+                            <div class="reddit-management">
+                                <div class="reddit-input-section">
+                                    <h4>Reddit 开发者凭据</h4>
+                                    <p>请在 <a href="https://www.reddit.com/prefs/apps" target="_blank" rel="noopener noreferrer" style="color: #60a5fa; font-weight: normal;">Reddit 开发者页面</a> 创建应用以获取以下凭据</p>
+                                    <div class="reddit-input-group">
+                                        <label for="reddit-client-id">Client ID:</label>
+                                        <input type="text" id="reddit-client-id" placeholder="请输入 Reddit Client ID" maxlength="100">
+                                    </div>
+                                    <div class="reddit-input-group">
+                                        <label for="reddit-client-secret">Client Secret:</label>
+                                        <input type="password" id="reddit-client-secret" placeholder="请输入 Reddit Client Secret" maxlength="100">
+                                    </div>
+                                    <div class="reddit-buttons">
+                                        <button id="save-reddit-creds-btn" class="add-token-btn">保存凭据</button>
+                                        <button id="clear-reddit-creds-btn" class="cancel-btn">清除凭据</button>
+                                    </div>
+                                    <small class="help-text">凭据将保存在浏览器本地存储中</small>
+                                </div>
                             </div>
                         </div>
                         <div class="tab-content" id="about-tab">

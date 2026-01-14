@@ -327,6 +327,66 @@ body {
     box-shadow: 0 0 0 1px var(--primary-color);
 }
 
+/* Reddit Management Styles */
+.reddit-input-section label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.reddit-input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.reddit-input-group label {
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.reddit-input-group input {
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.reddit-input-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.reddit-buttons {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.reddit-buttons .add-token-btn,
+.reddit-buttons .cancel-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.reddit-buttons .add-token-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+}
+
+.reddit-buttons .cancel-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
 .token-display {
     font-family: 'SF Mono', 'Courier New', Courier, monospace;
     font-size: 13px;

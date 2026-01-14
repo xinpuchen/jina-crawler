@@ -6,8 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Tab切换功能
     const tabManual = document.getElementById('tab-manual');
     const tabExcel = document.getElementById('tab-excel');
+    const tabReddit = document.getElementById('tab-reddit');
     const contentManual = document.getElementById('content-manual');
     const contentExcel = document.getElementById('content-excel');
+    const contentReddit = document.getElementById('content-reddit');
     const resultsSection = document.querySelector('.results-section');
     
     // 切换到手动粘贴Tab
@@ -41,8 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // 移除所有Tab的active类
         tabManual.classList.remove('active');
         tabExcel.classList.remove('active');
+        tabReddit.classList.remove('active');
         contentManual.classList.remove('active');
         contentExcel.classList.remove('active');
+        contentReddit.classList.remove('active');
         
         // 为当前Tab添加active类
         tabExcel.classList.add('active');
@@ -52,8 +56,29 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsSection.style.display = 'none';
     });
     
+    // 切换到Reddit定制化Tab
+    tabReddit.addEventListener('click', () => {
+        if (isProcessing) {
+            alert('任务正在进行中，无法切换处理类型！');
+            return;
+        }
+        
+        // 移除所有Tab的active类
+        tabManual.classList.remove('active');
+        tabExcel.classList.remove('active');
+        contentManual.classList.remove('active');
+        contentExcel.classList.remove('active');
+        
+        // 为当前Tab添加active类
+        tabReddit.classList.add('active');
+        contentReddit.classList.add('active');
+        
+        // 隐藏获取结果区域（Reddit定制化形式不需要在页面显示结果）
+        resultsSection.style.display = 'none';
+    });
+    
     // 页面加载时，根据当前激活的Tab显示或隐藏结果区域
-    if (tabExcel.classList.contains('active')) {
+    if (tabExcel.classList.contains('active') || tabReddit.classList.contains('active')) {
         resultsSection.style.display = 'none';
     } else {
         resultsSection.style.display = 'block';
@@ -63,6 +88,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const excelFileInput = document.getElementById('excel-file');
     const processExcelBtn = document.getElementById('process-excel-btn');
     const fileSelector = document.getElementById('file-selector');
+    // Reddit相关元素
+    const redditFileInput = document.getElementById('reddit-file');
+    const processRedditBtn = document.getElementById('process-reddit-btn');
+    const redditFileSelector = document.getElementById('reddit-file-selector');
     const progressSection = document.getElementById('progress-section');
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
@@ -201,6 +230,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
+    // 处理Reddit文件选择事件
+    redditFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            redditFileSelector.textContent = file.name;
+            processRedditBtn.disabled = true; // 初始保持禁用状态，直到文件读取成功并提取到链接
+            
+            // 读取Excel文件
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    currentWorkbook = XLSX.read(data, { type: 'array' });
+                    currentSheet = currentWorkbook.Sheets[currentWorkbook.SheetNames[0]];
+                    
+                    // 提取第A列的链接
+                    extractedLinks = extractLinksFromRedditExcel(currentSheet);
+                    
+                    if (extractedLinks.length === 0) {
+                        alert('未在第A列找到有效Reddit链接');
+                        processRedditBtn.disabled = true;
+                        processRedditBtn.style.display = 'none';
+                    } else {
+                        logMessage(`成功提取 ${extractedLinks.length} 个Reddit链接（最多5000个）`);
+                        processRedditBtn.disabled = false; // 只有在提取到有效链接后才启用按钮
+                        processRedditBtn.style.display = 'inline-block'; // 显示处理按钮
+                    }
+                } catch (error) {
+                    console.error('解析Reddit Excel文件出错:', error);
+                    alert('解析Reddit Excel文件出错，请检查文件格式是否正确');
+                    processRedditBtn.disabled = true;
+                    processRedditBtn.style.display = 'none';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            redditFileSelector.textContent = '选择Reddit Excel文件';
+            processRedditBtn.disabled = true;
+            processRedditBtn.style.display = 'none'; // 未选择文件时隐藏处理按钮
+            currentWorkbook = null;
+            currentSheet = null;
+            extractedLinks = [];
+        }
+    });
+    
     // 处理Excel文件按钮点击事件
     processExcelBtn.addEventListener('click', async () => {
         if (!currentWorkbook || !currentSheet || extractedLinks.length === 0) {
@@ -243,6 +317,42 @@ document.addEventListener('DOMContentLoaded', () => {
             // 设置任务状态为完成
             isProcessing = false;
         }
+    });
+    
+    // 处理Reddit文件按钮点击事件
+    processRedditBtn.addEventListener('click', async () => {
+        if (!currentWorkbook || !currentSheet || extractedLinks.length === 0) {
+            alert('请先选择有效的Reddit Excel文件');
+            return;
+        }
+        
+        // 设置任务状态为处理中
+        isProcessing = true;
+        
+        // 显示进度区域
+        progressSection.style.display = 'block';
+        resetProgress();
+        
+        // 更新总数
+        totalLinks = extractedLinks.length;
+        totalCount.textContent = `总链接: ${totalLinks}`;
+        
+        // 开始处理链接
+        await processRedditLinks(extractedLinks);
+        
+        // 处理完成后写入结果到Excel
+        writeResultsToRedditExcel();
+        
+        // 显示下载按钮
+        downloadExcelBtn.style.display = 'block';
+        statusText.textContent = '处理完成！';
+        logMessage('所有Reddit链接处理完成！');
+        
+        // 处理完成后隐藏进度条
+        document.querySelector('.progress-container').style.display = 'none';
+        
+        // 设置任务状态为完成
+        isProcessing = false;
     });
     
     // 处理Excel下载按钮点击事件
@@ -413,6 +523,184 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // 从Reddit Excel中提取第A列的链接
+    function extractLinksFromRedditExcel(sheet) {
+        const links = [];
+        const range = XLSX.utils.decode_range(sheet['!ref']);
+        
+        // 第A列的索引是0（从0开始）
+        const targetColumn = 0;
+        
+        // 遍历第A列的所有行
+        for (let row = range.s.r + 1; row <= range.e.r; row++) {
+            const cellAddress = XLSX.utils.encode_cell({ c: targetColumn, r: row });
+            const cell = sheet[cellAddress];
+            
+            if (cell && cell.v) {
+                const url = String(cell.v).trim();
+                if (isValidUrl(url)) {
+                    links.push({
+                        url: url,
+                        row: row,
+                        success: false
+                    });
+                }
+            }
+            
+            // 限制最多5000个链接
+            if (links.length >= 5000) {
+                break;
+            }
+        }
+        
+        return links;
+    }
+    
+    // 批量处理Reddit链接
+    async function processRedditLinks(links) {
+        const totalLinks = links.length;
+        let processed = 0;
+        let success = 0;
+        let error = 0;
+        
+        // 顺序处理每个链接，确保请求间隔
+        for (let i = 0; i < totalLinks; i++) {
+            const linkItem = links[i];
+            
+            statusText.textContent = `正在处理第 ${i + 1} 个Reddit链接: ${linkItem.url}`;
+            logMessage(`开始处理第 ${i + 1} 个Reddit链接: ${linkItem.url}`);
+            
+            try {
+                // 单独获取当前链接的内容
+                const result = await fetchRedditContent(linkItem.url);
+                
+                // 更新当前链接的结果
+                linkItem.content = result.content;
+                linkItem.success = !result.error;
+                linkItem.errorMessage = result.errorMessage;
+                
+                if (linkItem.success) {
+                    success++;
+                } else {
+                    error++;
+                    logMessage(`链接处理失败: ${linkItem.url} - ${result.errorMessage}`);
+                }
+                
+                processed++;
+                
+                // 更新进度
+                const progress = Math.round((processed / totalLinks) * 100);
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `${progress}%`;
+                processedCount.textContent = `已处理: ${processed}`;
+                successCount.textContent = `成功: ${success}`;
+                errorCount.textContent = `失败: ${error}`;
+                
+                // Reddit API 限制，避免请求过于频繁
+                // Reddit要求请求间隔 ≥ 1秒
+                if (i < totalLinks - 1) { // 最后一个请求后不需要等待
+                    await sleep(1100); // 等待1.1秒以确保满足速率限制要求
+                }
+                
+            } catch (err) {
+                console.error('处理单个链接出错:', err);
+                logMessage(`处理链接出错: ${linkItem.url} - ${err.message}`);
+                error++;
+                linkItem.success = false;
+                linkItem.errorMessage = err.message;
+                
+                processed++;
+                
+                // 更新进度
+                const progress = Math.round((processed / totalLinks) * 100);
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `${progress}%`;
+                processedCount.textContent = `已处理: ${processed}`;
+                successCount.textContent = `成功: ${success}`;
+                errorCount.textContent = `失败: ${error}`;
+                
+                // 即使出错也要保持请求间隔
+                if (i < totalLinks - 1) { // 最后一个请求后不需要等待
+                    await sleep(1100); // 等待1.1秒以确保满足速率限制要求
+                }
+            }
+        }
+        
+        statusText.textContent = `处理完成！成功: ${success}, 失败: ${error}`;
+        logMessage(`处理完成！总共处理 ${totalLinks} 个链接，成功: ${success}, 失败: ${error}`);
+    }
+    
+    // 将Reddit结果写入Excel
+    async function writeResultsToRedditExcel() {
+        // 确定添加的列索引 - 根据需求添加title, author, date, content, comment_author, comment_date, comment_content
+        const columns = [
+            { name: 'title', index: currentSheet['!ref'] ? XLSX.utils.decode_range(currentSheet['!ref']).e.c + 1 : 1 },
+            { name: 'author', index: currentSheet['!ref'] ? XLSX.utils.decode_range(currentSheet['!ref']).e.c + 2 : 2 },
+            { name: 'date', index: currentSheet['!ref'] ? XLSX.utils.decode_range(currentSheet['!ref']).e.c + 3 : 3 },
+            { name: 'content', index: currentSheet['!ref'] ? XLSX.utils.decode_range(currentSheet['!ref']).e.c + 4 : 4 },
+            { name: 'comment_author', index: currentSheet['!ref'] ? XLSX.utils.decode_range(currentSheet['!ref']).e.c + 5 : 5 },
+            { name: 'comment_date', index: currentSheet['!ref'] ? XLSX.utils.decode_range(currentSheet['!ref']).e.c + 6 : 6 },
+            { name: 'comment_content', index: currentSheet['!ref'] ? XLSX.utils.decode_range(currentSheet['!ref']).e.c + 7 : 7 }
+        ];
+        
+        // 添加列标题
+        columns.forEach(col => {
+            const headerCellAddress = XLSX.utils.encode_cell({ c: col.index, r: 0 });
+            currentSheet[headerCellAddress] = { v: col.name, t: 's' };
+        });
+        
+        // 写入结果
+        extractedLinks.forEach(link => {
+            // 对于每个链接，我们需要解析其内容来提取不同的字段
+            try {
+                // 解析Reddit JSON数据
+                let redditData = {
+                    title: '无标题',
+                    author: 'Unknown',
+                    date: 'Unknown',
+                    content: '无法提取内容',
+                    comment_author: 'Unknown',
+                    comment_date: 'Unknown',
+                    comment_content: 'No comments'
+                };
+                
+                if (link.content) {
+                    try {
+                        // 解析JSON数据
+                        redditData = JSON.parse(link.content);
+                    } catch (e) {
+                        console.error('解析Reddit JSON数据出错:', e);
+                        logMessage(`解析Reddit JSON数据出错: ${e.message}`);
+                    }
+                }
+                
+                // 写入每一列的数据
+                columns.forEach(col => {
+                    const cellAddress = XLSX.utils.encode_cell({ r: link.row, c: col.index });
+                    let value = redditData[col.name] || '';
+                    
+                    // Excel单个单元格最大文本长度限制为32767字符，超过则截断
+                    if (typeof value === 'string' && value.length > 32767) {
+                        value = value.substring(0, 32760) + '...(截断)';
+                    }
+                    
+                    currentSheet[cellAddress] = { v: value, t: 's' };
+                });
+            } catch (e) {
+                console.error('写入Reddit结果出错:', e);
+                logMessage(`写入Reddit结果出错: ${e.message}`);
+            }
+        });
+        
+        // 更新工作表范围
+        const range = XLSX.utils.decode_range(currentSheet['!ref']);
+        const maxColIndex = Math.max(...columns.map(col => col.index));
+        if (maxColIndex > range.e.c) {
+            range.e.c = maxColIndex;
+            currentSheet['!ref'] = XLSX.utils.encode_range(range);
+        }
+    }
+    
     // 批量处理URL（用于普通文本输入）
     async function batchProcessUrls(urls) {
         const totalUrls = urls.length;
@@ -495,6 +783,11 @@ document.addEventListener('DOMContentLoaded', () => {
             errorMessage += ` (${url})`;
         }
         logMessage(errorMessage, true);
+    }
+
+    // 延迟函数
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     // 验证URL格式
@@ -594,6 +887,361 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
     }
+    
+    // 创建Reddit认证请求的通用函数
+    async function makeRedditAuthRequest(client_id, client_secret, grant_type, refresh_token = null) {
+        const auth_url = 'https://www.reddit.com/api/v1/access_token';
+        
+        const headers = { 
+            'User-Agent': navigator.userAgent,
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+        }; 
+        
+        let bodyParams = { 'grant_type': grant_type };
+        if (grant_type === 'refresh_token' && refresh_token) {
+            bodyParams['refresh_token'] = refresh_token;
+        }
+        
+        const body = new URLSearchParams(bodyParams);
+        
+        const auth = { 
+            method: 'POST', 
+            headers: { 
+                'Authorization': 'Basic ' + btoa(client_id + ':' + client_secret), 
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': headers['User-Agent'], 
+                'Accept': headers['Accept'],
+                'Accept-Language': headers['Accept-Language'],
+                'Accept-Encoding': headers['Accept-Encoding'],
+                'Connection': headers['Connection'],
+                'Sec-Fetch-Dest': headers['Sec-Fetch-Dest'],
+                'Sec-Fetch-Mode': headers['Sec-Fetch-Mode'],
+                'Sec-Fetch-Site': headers['Sec-Fetch-Site'],
+                'Cache-Control': headers['Cache-Control'],
+                'Pragma': headers['Pragma']
+            }, 
+            body: body.toString(), 
+        }; 
+
+        return await fetch(auth_url, auth);
+    }
+    
+    // 更新并保存Reddit凭据
+    function updateAndSaveRedditCredentials(credentials, newAccessToken, newRefreshToken = null) {
+        const newCredentials = {
+            ...credentials,
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken || credentials.refreshToken, // 保留现有的refresh_token，除非提供新的
+            tokenExpiry: new Date().getTime() + (3600 * 1000) // Add 1 hour in milliseconds
+        };
+        
+        saveRedditCredentials(newCredentials);
+        return newCredentials;
+    }
+    
+    // 获取Reddit访问令牌
+    async function getRedditAccessToken() {
+        let credentials = getRedditCredentials();
+        
+        // 如果没有配置凭据，返回null，让后续代码使用非认证请求
+        if (!credentials.clientId || !credentials.clientSecret) {
+            return null;
+        }
+
+        // 检查现有access_token是否仍然有效
+        const now = new Date().getTime();
+        if (credentials.accessToken && credentials.tokenExpiry && now < credentials.tokenExpiry) {
+            // Token still valid, return it
+            return credentials.accessToken;
+        }
+
+        // Token expired or doesn't exist, try to refresh using refresh_token
+        if (credentials.refreshToken) {
+            try {
+                const newToken = await refreshRedditAccessToken(credentials);
+                if (newToken) {
+                    return newToken;
+                }
+            } catch (error) {
+                console.error('刷新Reddit访问令牌失败:', error);
+            }
+        }
+
+        // If no refresh_token or refresh failed, get a new access_token
+        try {
+            const response = await makeRedditAuthRequest(
+                credentials.clientId, 
+                credentials.clientSecret, 
+                'client_credentials'
+            );
+
+            if (!response.ok) {
+                console.error('获取Reddit访问令牌失败:', response.status, await response.text());
+                return null;
+            }
+
+            const data = await response.json();
+            
+            // Save the new access token with expiry time (Reddit tokens expire in 1 hour = 3600 seconds)
+            updateAndSaveRedditCredentials(credentials, data.access_token);
+            
+            return data.access_token;
+        } catch (error) {
+            console.error('获取Reddit访问令牌时出错:', error);
+            return null;
+        }
+    }
+    
+    // Refresh Reddit access token using refresh token
+    async function refreshRedditAccessToken(credentials) {
+        try {
+            const response = await makeRedditAuthRequest(
+                credentials.clientId,
+                credentials.clientSecret,
+                'refresh_token',
+                credentials.refreshToken
+            );
+
+            if (!response.ok) {
+                console.error('刷新Reddit访问令牌失败:', response.status, await response.text());
+                return null;
+            }
+
+            const data = await response.json();
+            
+            // Save the new access token with expiry time
+            updateAndSaveRedditCredentials(credentials, data.access_token);
+            
+            return data.access_token;
+        } catch (error) {
+            console.error('刷新Reddit访问令牌时出错:', error);
+            return null;
+        }
+    }
+
+    // 获取Reddit内容（专门用于Reddit链接）
+    async function fetchRedditContent(originalUrl) {
+        // 检查是否为Reddit链接
+        const isRedditUrl = originalUrl.includes('reddit.com');
+        let apiUrl = originalUrl;
+        
+        // 如果是Reddit链接，转换为JSON API端点
+        if (isRedditUrl) {
+            // 将Reddit URL转换为对应的JSON API端点
+            // 例如：https://www.reddit.com/r/subreddit/comments/post_id/ -> https://www.reddit.com/r/subreddit/comments/post_id/.json
+            // 或者：https://reddit.com/r/subreddit/comments/post_id/ -> https://reddit.com/r/subreddit/comments/post_id/.json
+            if (originalUrl.endsWith('/')) {
+                apiUrl = originalUrl.slice(0, -1) + '.json';
+            } else {
+                apiUrl = originalUrl + '.json';
+            }
+        } else {
+            // 如果不是Reddit链接，返回错误
+            return {
+                url: originalUrl,
+                content: JSON.stringify({
+                    title: '非Reddit链接',
+                    author: 'N/A',
+                    date: 'N/A',
+                    content: '该链接不是Reddit链接',
+                    comment_author: 'N/A',
+                    comment_date: 'N/A',
+                    comment_content: 'N/A'
+                }),
+                error: true,
+                errorMessage: '该链接不是Reddit链接'
+            };
+        }
+        
+        // 检查是否有配置凭据
+        const credentials = getRedditCredentials();
+        let accessToken = null;
+        
+        // 只有在配置了client_id和client_secret时才尝试获取访问令牌
+        if (credentials.clientId && credentials.clientSecret) {
+            accessToken = await getRedditAccessToken();
+        }
+        
+        // 构建更真实的请求头
+        const buildHeaders = (token) => {
+            const headers = {
+                'User-Agent': navigator.userAgent,
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            return headers;
+        };
+
+        try {
+            const headers = buildHeaders(accessToken);
+            
+            const response = await fetch(apiUrl, {
+                method: "GET",
+                mode: "cors",
+                credentials: "omit", // 使用omit避免跨域问题
+                headers: headers,
+                redirect: "follow",
+                cache: "no-store"
+            });
+
+            if (!response.ok) {
+                // 如果是401（未授权）或403（禁止访问），并且使用了token，尝试清理token后重试
+                if ((response.status === 401 || response.status === 403) && accessToken) {
+                    // 清除当前的过期token
+                    const updatedCredentials = {
+                        ...credentials,
+                        accessToken: '',
+                        tokenExpiry: null
+                    };
+                    saveRedditCredentials(updatedCredentials);
+                    
+                    // 获取新的token并重试
+                    const newAccessToken = await getRedditAccessToken();
+                    
+                    // 重新构建请求头并重试
+                    const retryHeaders = buildHeaders(newAccessToken);
+                    
+                    const retryResponse = await fetch(apiUrl, {
+                        method: "GET",
+                        mode: "cors",
+                        credentials: "omit",
+                        headers: retryHeaders,
+                        redirect: "follow",
+                        cache: "no-store"
+                    });
+
+                    if (!retryResponse.ok) {
+                        throw new Error(formatHttpErrorMessage(retryResponse.status));
+                    }
+                    
+                    // 如果重试成功，使用重试的响应
+                    const data = await retryResponse.json();
+                    return await parseRedditData(data, originalUrl);
+                } else {
+                    throw new Error(formatHttpErrorMessage(response.status));
+                }
+            }
+
+            // Reddit API返回JSON格式的数据
+            const data = await response.json();
+            
+            return await parseRedditData(data, originalUrl);
+        } catch (error) {
+            console.error(`获取${originalUrl}内容时出错:`, error);
+            // 返回结构化的错误数据
+            const errorData = {
+                title: '获取失败',
+                author: 'Unknown',
+                date: 'Unknown',
+                content: `错误: ${error.message}`,
+                comment_author: 'Unknown',
+                comment_date: 'Unknown',
+                comment_content: 'No comments'
+            };
+            return {
+                url: originalUrl,
+                content: JSON.stringify(errorData),
+                error: true,
+                errorMessage: error.message
+            };
+        }
+    }
+    
+    // 格式化HTTP错误消息的辅助函数
+    function formatHttpErrorMessage(status) {
+        let errorMessage = `HTTP错误! 状态: ${status}`;
+        if (status === 404) {
+            errorMessage += ' (页面未找到)';
+        } else if (status === 429) {
+            errorMessage += ' (请求过于频繁，请稍后重试)';
+        } else if (status === 401 || status === 403) {
+            errorMessage += ' (访问被拒绝，请检查Reddit凭据)';
+        } else if (status >= 500) {
+            errorMessage += ' (服务器错误)';
+        }
+        return errorMessage;
+    }
+    
+    // 解析Reddit JSON数据的辅助函数
+    async function parseRedditData(data, originalUrl) {
+        // 解析Reddit JSON数据
+        let redditData = {
+            title: '无标题',
+            author: 'Unknown',
+            date: 'Unknown',
+            content: '无法提取内容',
+            comment_author: 'Unknown',
+            comment_date: 'Unknown',
+            comment_content: 'No comments'
+        };
+        
+        if (Array.isArray(data) && data.length > 0) {
+            // Reddit JSON API通常返回包含帖子和评论的数组
+            const postData = data[0];
+            const commentsData = data.length > 1 ? data[1] : null;
+            
+            if (postData && postData.data && postData.data.children && postData.data.children.length > 0) {
+                const post = postData.data.children[0].data;
+                
+                redditData.title = post.title || '无标题';
+                redditData.author = post.author || 'Unknown';
+                redditData.content = post.selftext || post.url || '无内容';
+                
+                // 将时间戳转换为可读日期
+                if (post.created_utc) {
+                    const date = new Date(post.created_utc * 1000);
+                    redditData.date = date.toISOString().split('T')[0]; // 格式: YYYY-MM-DD
+                } else {
+                    redditData.date = 'Unknown';
+                }
+                
+                // 处理评论
+                if (commentsData && commentsData.data && commentsData.data.children) {
+                    const firstComment = commentsData.data.children.find(child => child.kind === 't1');
+                    if (firstComment) {
+                        const commentData = firstComment.data;
+                        redditData.comment_author = commentData.author || 'Unknown';
+                        redditData.comment_content = commentData.body || 'No comments';
+                        
+                        if (commentData.created_utc) {
+                            const commentDate = new Date(commentData.created_utc * 1000);
+                            redditData.comment_date = commentDate.toISOString().split('T')[0];
+                        } else {
+                            redditData.comment_date = 'Unknown';
+                        }
+                    }
+                }
+            }
+        }
+
+        return {
+            url: originalUrl,
+            content: JSON.stringify(redditData), // 返回JSON格式的数据
+            error: false,
+            errorMessage: null
+        };
+    }
 
     // 将结果添加到表格（带行号）
     function addResultToTable(result, rowNumber = null) {
@@ -664,6 +1312,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Token存储的键名
     const TOKEN_STORAGE_KEY = 'jina_crawler_tokens';
     
+    // Reddit凭据存储的键名
+    const REDDIT_CREDS_STORAGE_KEY = 'jina_crawler_reddit_creds';
+    
     // 获取所有tokens
     function getAllTokens() {
         const tokensStr = localStorage.getItem(TOKEN_STORAGE_KEY);
@@ -673,6 +1324,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // 保存所有tokens
     function saveAllTokens(tokens) {
         localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokens));
+    }
+    
+    // 获取Reddit凭据
+    function getRedditCredentials() {
+        const credsStr = localStorage.getItem(REDDIT_CREDS_STORAGE_KEY);
+        return credsStr ? JSON.parse(credsStr) : { 
+            clientId: '', 
+            clientSecret: '',
+            accessToken: '',
+            refreshToken: '',
+            tokenExpiry: null
+        };
+    }
+    
+    // 保存Reddit凭据
+    function saveRedditCredentials(credentials) {
+        localStorage.setItem(REDDIT_CREDS_STORAGE_KEY, JSON.stringify(credentials));
+    }
+    
+    // 清除Reddit凭据
+    function clearRedditCredentials() {
+        localStorage.removeItem(REDDIT_CREDS_STORAGE_KEY);
     }
     
     // 获取当前激活的token
@@ -940,6 +1613,51 @@ document.addEventListener('DOMContentLoaded', () => {
         
 
         
+        // 获取Reddit凭据相关元素
+        const redditClientIdInput = document.getElementById('reddit-client-id');
+        const redditClientSecretInput = document.getElementById('reddit-client-secret');
+        const saveRedditCredsBtn = document.getElementById('save-reddit-creds-btn');
+        const clearRedditCredsBtn = document.getElementById('clear-reddit-creds-btn');
+        
+        // 加载Reddit凭据到输入框
+        function loadRedditCredentials() {
+            const credentials = getRedditCredentials();
+            if (redditClientIdInput) {
+                redditClientIdInput.value = credentials.clientId || '';
+            }
+            if (redditClientSecretInput) {
+                redditClientSecretInput.value = credentials.clientSecret || '';
+            }
+        }
+        
+        // 保存Reddit凭据
+        saveRedditCredsBtn.addEventListener('click', () => {
+            const clientId = redditClientIdInput.value.trim();
+            const clientSecret = redditClientSecretInput.value.trim();
+            
+            if (!clientId || !clientSecret) {
+                alert('请输入完整的 Reddit Client ID 和 Client Secret！');
+                return;
+            }
+            
+            saveRedditCredentials({
+                clientId: clientId,
+                clientSecret: clientSecret
+            });
+            
+            alert('Reddit 凭据已保存！');
+        });
+        
+        // 清除Reddit凭据
+        clearRedditCredsBtn.addEventListener('click', () => {
+            if (confirm('确定要清除 Reddit 凭据吗？')) {
+                clearRedditCredentials();
+                if (redditClientIdInput) redditClientIdInput.value = '';
+                if (redditClientSecretInput) redditClientSecretInput.value = '';
+                alert('Reddit 凭据已清除！');
+            }
+        });
+        
         // 添加标签切换功能
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
@@ -958,7 +1676,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 显示对应的内容面板
                 const tabId = item.getAttribute('data-tab');
                 document.getElementById(`${tabId}-tab`).classList.add('active');
+                
+                // 如果切换到Reddit管理标签，加载凭据
+                if (tabId === 'reddit-management') {
+                    loadRedditCredentials();
+                }
             });
+        });
+        
+        // 当打开设置弹窗时，也加载Reddit凭据
+        settingsBtn.addEventListener('click', () => {
+            // 延迟加载Reddit凭据，确保DOM已更新
+            setTimeout(loadRedditCredentials, 100);
         });
     }
     
