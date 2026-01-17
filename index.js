@@ -7,9 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabManual = document.getElementById('tab-manual');
     const tabExcel = document.getElementById('tab-excel');
     const tabReddit = document.getElementById('tab-reddit');
+    const tabCision = document.getElementById('tab-cision');
     const contentManual = document.getElementById('content-manual');
     const contentExcel = document.getElementById('content-excel');
     const contentReddit = document.getElementById('content-reddit');
+    const contentCision = document.getElementById('content-cision');
     const resultsSection = document.querySelector('.results-section');
     
     // 切换到手动粘贴Tab
@@ -19,11 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // 移除所有Tab的active类
-        tabManual.classList.remove('active');
+        // 移除所有其他Tab的active类
         tabExcel.classList.remove('active');
-        contentManual.classList.remove('active');
+        tabReddit.classList.remove('active');
+        tabCision.classList.remove('active');
         contentExcel.classList.remove('active');
+        contentReddit.classList.remove('active');
+        contentCision.classList.remove('active');
         
         // 为当前Tab添加active类
         tabManual.classList.add('active');
@@ -40,13 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // 移除所有Tab的active类
+        // 移除所有其他Tab的active类
         tabManual.classList.remove('active');
-        tabExcel.classList.remove('active');
         tabReddit.classList.remove('active');
+        tabCision.classList.remove('active');
         contentManual.classList.remove('active');
-        contentExcel.classList.remove('active');
         contentReddit.classList.remove('active');
+        contentCision.classList.remove('active');
         
         // 为当前Tab添加active类
         tabExcel.classList.add('active');
@@ -63,11 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // 移除所有Tab的active类
+        // 移除所有其他Tab的active类
         tabManual.classList.remove('active');
         tabExcel.classList.remove('active');
+        tabCision.classList.remove('active');
         contentManual.classList.remove('active');
         contentExcel.classList.remove('active');
+        contentCision.classList.remove('active');
         
         // 为当前Tab添加active类
         tabReddit.classList.add('active');
@@ -77,12 +83,39 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsSection.style.display = 'none';
     });
     
+    // 切换到CisionOne定制化Tab
+    tabCision.addEventListener('click', () => {
+        if (isProcessing) {
+            alert('任务正在进行中，无法切换处理类型！');
+            return;
+        }
+        
+        // 移除所有其他Tab的active类
+        tabManual.classList.remove('active');
+        tabExcel.classList.remove('active');
+        tabReddit.classList.remove('active');
+        contentManual.classList.remove('active');
+        contentExcel.classList.remove('active');
+        contentReddit.classList.remove('active');
+        
+        // 为当前Tab添加active类
+        tabCision.classList.add('active');
+        contentCision.classList.add('active');
+        
+        // 隐藏获取结果区域（CisionOne定制化形式不需要在页面显示结果）
+        resultsSection.style.display = 'none';
+    });
+    
     // 页面加载时，根据当前激活的Tab显示或隐藏结果区域
-    if (tabExcel.classList.contains('active') || tabReddit.classList.contains('active')) {
+    if (tabExcel.classList.contains('active') || tabReddit.classList.contains('active') || tabCision.classList.contains('active')) {
         resultsSection.style.display = 'none';
     } else {
         resultsSection.style.display = 'block';
     }
+    
+    // 确保页面加载时Excel Tab及其内容都是激活状态
+    tabExcel.classList.add('active');
+    contentExcel.classList.add('active');
     
     // Excel相关元素
     const excelFileInput = document.getElementById('excel-file');
@@ -92,6 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const redditFileInput = document.getElementById('reddit-file');
     const processRedditBtn = document.getElementById('process-reddit-btn');
     const redditFileSelector = document.getElementById('reddit-file-selector');
+    // CisionOne相关元素
+    const cisionJsonInput = document.getElementById('cision-json-input');
+    const downloadCisionExcelBtn = document.getElementById('download-cision-excel-btn');
     const progressSection = document.getElementById('progress-section');
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
@@ -375,6 +411,66 @@ document.addEventListener('DOMContentLoaded', () => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    });
+    
+    // 处理CisionOne下载Excel按钮点击事件
+    downloadCisionExcelBtn.addEventListener('click', () => {
+        try {
+            // 获取输入的JSON数据
+            const jsonData = cisionJsonInput.value.trim();
+            if (!jsonData) {
+                alert('请输入JSON数据');
+                return;
+            }
+            
+            // 解析JSON数据
+            let data;
+            try {
+                data = JSON.parse(jsonData);
+            } catch (error) {
+                alert('JSON格式错误，请检查输入的数据格式');
+                return;
+            }
+            
+            // 检查是否有results属性
+            if (!data.results || !Array.isArray(data.results)) {
+                alert('JSON数据必须包含results数组');
+                return;
+            }
+            
+            // 格式转换
+            const processedData = data.results.map(e => ({
+                url: e.url,
+                author: e.fullname,
+                date: e.date,
+                title: e.title,
+                content: e.snippet
+            }));
+            
+            // 创建工作簿和工作表
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(processedData);
+            
+            // 设置列宽
+            const colWidths = [
+                { wch: 50 }, // url
+                { wch: 20 }, // author
+                { wch: 15 }, // date
+                { wch: 50 }, // title
+                { wch: 80 }  // content
+            ];
+            ws['!cols'] = colWidths;
+            
+            // 将工作表添加到工作簿
+            XLSX.utils.book_append_sheet(wb, ws, 'CisionOne数据');
+            
+            // 导出文件
+            const fileName = 'cisionone_data_' + new Date().getTime() + '.xlsx';
+            XLSX.writeFile(wb, fileName);
+        } catch (error) {
+            console.error('处理CisionOne数据时出错:', error);
+            alert('处理数据时出错: ' + error.message);
+        }
     });
     
     // 从Excel中提取第E列的链接
@@ -1737,4 +1833,104 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.click();
         }
     });
+    
+    // CisionOne数据变量
+    let cisionData = [];
+
+    // JSONP 实现函数
+    function jsonp(url, callbackName) {
+        return new Promise((resolve, reject) => {
+            const timestamp = Date.now();
+            const scriptId = `jsonp_script_${timestamp}`;
+            const callbackId = `${callbackName}_${timestamp}`;
+            
+            // 创建全局回调函数
+            window[callbackId] = function(data) {
+                resolve(data);
+                
+                // 清理脚本标签和回调函数
+                const script = document.getElementById(scriptId);
+                if (script) {
+                    document.head.removeChild(script);
+                }
+                delete window[callbackId];
+            };
+            
+            // 创建并添加脚本标签
+            const script = document.createElement('script');
+            script.id = scriptId;
+            
+            // 检查URL是否已经包含参数
+            let jsonpUrl = url;
+            if (url.includes('?')) {
+                jsonpUrl += `&callback=${callbackId}`;
+            } else {
+                jsonpUrl += `?callback=${callbackId}`;
+            }
+            
+            // 设置crossorigin属性
+            script.crossOrigin = 'anonymous';
+            script.src = jsonpUrl;
+            
+            script.onerror = function() {
+                // 清理
+                if (window[callbackId]) {
+                    delete window[callbackId];
+                }
+                if (document.head.contains(script)) {
+                    document.head.removeChild(script);
+                }
+                reject(new Error('JSONP 请求失败 - 可能被CORS策略阻止'));
+            };
+            
+            // 添加超时处理
+            const timeout = setTimeout(() => {
+                if (window[callbackId]) {
+                    delete window[callbackId];
+                }
+                if (document.head.contains(script)) {
+                    document.head.removeChild(script);
+                }
+                reject(new Error('JSONP 请求超时'));
+            }, 10000); // 10秒超时
+            
+            // 成功加载后清除定时器
+            script.onload = function() {
+                clearTimeout(timeout);
+            };
+            
+            document.head.appendChild(script);
+        });
+    }
+
+    // CisionOne tab切换功能
+    const cisionApiTab = document.getElementById('cision-api-tab');
+    const cisionJsonTab = document.getElementById('cision-json-tab');
+    const cisionApiContent = document.getElementById('cision-api-content');
+    const cisionJsonContent = document.getElementById('cision-json-content');
+    
+    // 初始显示API内容
+    if (cisionApiTab && cisionJsonTab && cisionApiContent && cisionJsonContent) {
+        cisionApiTab.classList.add('active');
+        cisionJsonTab.classList.remove('active');
+        cisionApiContent.classList.add('active');
+        cisionJsonContent.classList.remove('active');
+        
+        // API tab切换事件
+        cisionApiTab.addEventListener('click', () => {
+            cisionApiTab.classList.add('active');
+            cisionJsonTab.classList.remove('active');
+            cisionApiContent.classList.add('active');
+            cisionJsonContent.classList.remove('active');
+        });
+        
+        // JSON tab切换事件
+        cisionJsonTab.addEventListener('click', () => {
+            cisionApiTab.classList.remove('active');
+            cisionJsonTab.classList.add('active');
+            cisionApiContent.classList.remove('active');
+            cisionJsonContent.classList.add('active');
+        });
+    }
 });
+

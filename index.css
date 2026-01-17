@@ -50,11 +50,11 @@ body {
     right: 20px;
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: white;
-    border: none;
-    padding: 10px 20px;
     font-size: 14px;
     font-weight: 600;
     border-radius: var(--radius-md);
+    border: none;
+    padding: 10px 15px;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: var(--shadow-md);
@@ -1380,7 +1380,6 @@ h2 {
 .status-text {
     font-weight: 600;
     color: var(--primary-color);
-    margin-bottom: 15px;
 }
 
 /* Tab切换样式 */
@@ -1708,3 +1707,147 @@ h2 {
         font-size: 0.95rem;
     }
 }
+
+/* Reddit 定制化相关样式 */
+#content-reddit .input-section {
+    padding: 20px;
+}
+
+#content-reddit .file-upload-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+#content-reddit .file-selector {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#content-reddit .file-selector:hover {
+    background-color: #e0e0e0;
+}
+
+/* CisionOne 定制化相关样式 */
+.cision-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.cision-tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.cision-tab-btn.active {
+    color: #047857;
+    border-bottom: 2px solid #047857;
+}
+
+.cision-tab-content {
+    display: none;
+}
+
+.cision-tab-content.active {
+    display: block;
+}
+
+#content-cision .input-section {
+    padding: 20px;
+}
+
+#content-cision textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.cision-input-section {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.cision-input-group {
+    margin-bottom: 15px;
+}
+
+.cision-input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.cision-input-group input[type="datetime-local"],
+.cision-input-group input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* 为CisionOne下载按钮添加上边距 */
+#download-cision-excel-btn {
+    margin-top: 20px;
+}
+
+/* CisionOne说明文档样式 */
+.cision-instructions {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--primary-color);
+}
+
+.cision-instructions h4 {
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.cision-instructions ol {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--text-secondary);
+}
+
+.cision-instructions li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.cision-helper-image {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.cision-helper-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+}
+
