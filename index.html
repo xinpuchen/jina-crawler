@@ -22,6 +22,7 @@
                 <button id="tab-excel" class="tab-btn active">Excel文件上传</button>
                 <button id="tab-manual" class="tab-btn">手动粘贴链接</button>
                 <button id="tab-reddit" class="tab-btn">Reddit 定制化</button>
+                <button id="tab-cision" class="tab-btn">CisionOne 定制化</button>
             </div>
             
             <!-- 手动粘贴Tab内容 -->
@@ -36,7 +37,7 @@ https://example.org
             </div>
             
             <!-- Excel上传Tab内容 -->
-            <div id="content-excel" class="tab-content active">
+            <div id="content-excel" class="tab-content">
                 <div class="input-section">
                     <h2>Excel文件批量处理</h2>
                     <p>支持上传包含网页链接的Excel文件，系统将自动读取第E列的链接（最多5000个），并在第G列后添加"全文内容"列。</p>
@@ -62,6 +63,20 @@ https://example.org
                         </label>
                         <button id="process-reddit-btn" class="process-btn" disabled style="display: none;">处理Reddit文件</button>
                     </div>
+                </div>
+            </div>
+            
+            <!-- CisionOne定制化Tab内容 -->
+            <div id="content-cision" class="tab-content">
+                <div class="input-section">
+                    <h2>CisionOne 定制化处理</h2>
+                    <p>请在下方输入JSON数据，系统将按照指定格式进行处理并导出为Excel文件。</p>
+                    <div class="cision-input-section">
+                        <label for="cision-json-input">输入JSON数据：</label>
+                        <textarea id="cision-json-input" rows="15" placeholder='输入JSON数据'></textarea>
+                    </div>
+                    <button id="download-cision-excel-btn" class="process-btn">下载到 Excel 文件</button>
+
                 </div>
             </div>
         </div>
